@@ -1,0 +1,98 @@
+define(function(require, exports, module) {
+	
+	var toString = Object.prototype.toString
+
+    var isArray = Array.isArray || function(val) {
+		return toString.call(val) === '[object Array]'
+    };
+
+    var isFunction = function(val) {
+    	return toString.call(val) === '[object Function]'
+    };
+    
+    /*
+	 * 实现js的原型继承: 减少内存占用
+	 * 设计原则：
+	 * 1）所有公共方法（属性，公共私有属性）都放在prototype，为了可以使用原型继承
+	 * 2）公共方法（属性）用到的私有方法，需要放在闭包中，或者prototype中(命名以下划线_开头)
+	 * 3）对象私有属性需要放在闭包中，或者this中
+	 */
+	function Class(arg) {
+		
+		return Class.create(arg);
+	}
+	
+	Class.create = function(arg) {
+		var SubClass = create(arg);
+		
+		SubClass.extend = function(SuperClass) {
+			
+			return Class.extend(SubClass, SuperClass);
+		};
+
+		return SubClass;
+	};
+	
+	Class.extend = function(SubClass, SuperClass, isSubPrototype) {
+		SubClass = create(SubClass);
+		SuperClass = create(SuperClass);
+		if (isSubPrototype) {
+			extend(SubClass.prototype, SuperClass.prototype);
+		} else {
+			//继承SuperClass的prototype
+			SubClass.prototype = extend(SuperClass.prototype, SubClass.prototype);
+		}
+		
+		SubClass._super = function() {
+			SuperClass.apply(this, arguments);
+		};
+		
+		return SubClass;
+	};
+	
+	Class.implement = function(SubClass, SuperClass) {
+		
+		return Class.extend(SubClass, SuperClass, true);
+	};
+	
+	function create(arg) {
+		var _super = noop;
+		if (isFunction(arg)) {
+			_super = arg;
+			arg = arg.prototype;
+		}
+		
+		function SubClass() {
+			_super.apply(this, arguments);
+			if (isFunction(this.initialize)) {
+		        this.initialize.apply(this, arguments);
+		      }
+		}
+		
+		SubClass.prototype = createProto(arg, SubClass);
+		
+		return SubClass;
+	}
+	
+	function createProto(obj, constructor) {
+		var F = $.noop;
+		F.prototype = obj || {};
+		F = new F();
+		F.constructor = constructor;
+		return F;
+	}
+	
+	function noop() {}
+	
+	function extend(target, src) {
+		for (var i = 1, len = arguments.length; i < len; i++) {
+			src = arguments[i]
+			for (var j in src) {
+				target[j] = src[i];
+			}
+		}
+		
+		return target;
+	}
+	
+});

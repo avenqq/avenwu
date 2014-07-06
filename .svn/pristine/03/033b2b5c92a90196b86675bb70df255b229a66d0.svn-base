@@ -1,0 +1,96 @@
+define(function(require, exports, module) {
+	
+	var toString = Object.prototype.toString
+
+    var isArray = Array.isArray || function(val) {
+		return toString.call(val) === '[object Array]'
+    };
+
+    var isFunction = function(val) {
+    	return toString.call(val) === '[object Function]'
+    };
+    
+    /*
+	 * 实现js的原型继承
+	 * 设计原则：
+	 * 1）所有公共方法（属性，公共私有属性）都放在prototype，为了可以使用原型继承
+	 * 2）公共方法（属性）用到的私有方法，需要放在闭包中，或者prototype中(命名以下划线_开头)
+	 * 3）对象私有属性需要放在闭包中，或者this中
+	 */
+	function Class(arg) {
+		
+		return Class.create(arg);
+	}
+	
+	Class.create = function(arg) {
+		var SubClass = create(arg);
+		SubClass.extend = function(superClass) {
+			superClass = create(superClass);
+			extend(superClass.prototype, SubClass.prototype);
+			superClass.prototype._superclass = superClass;
+			superClass.prototype.superclass = function() {
+				SubClass.apply(this, arguments);
+			};
+			return superClass;
+		};
+		
+		
+	};
+	
+	Class.extend = function() {
+		
+	};
+	
+	Class.implement = function() {
+		
+	};
+	
+	/**
+	 * 这里改成copy而不是原型继承的原因：
+	 * 1）减少查找关系链深度
+	 * 2）遵循最佳实践原则，对传进来的参数最好用其拷贝
+	 * 3）继承过程中不可能使双方都能原型继承，必须有一方是拷贝，所以这里用copy
+	 * 4）这里是生成新的Class，copy不影响class的属性，所以也适合copy，这也让生成的class不会依赖原有的对象
+	 */
+	function create(arg) {
+		var superConstructor = noop;
+		if ($.isFunction(arg)) {
+			superConstructor = arg;
+			arg = arg.prototype;
+		}
+		
+		function SubClass() {
+			superConstructor.apply(this, arguments);
+			//this是否为SubClass生成的对象
+			if (this instanceof SubClass && isFunction(this.initialize)) {
+		        this.initialize.apply(this, arguments);
+		      }
+		}
+		
+		SubClass.prototype = createProto(arg, SubClass);
+		
+		return SubClass;
+	}
+	
+	function createProto(obj, constructor) {
+		var F = $.noop;
+		F.prototype = obj || {};
+		F = new F();
+		F.constructor = constructor;
+		return F;
+	}
+	
+	function noop() {}
+	
+	function extend(target, src) {
+		for (var i = 1, len = arguments.length; i < len; i++) {
+			src = arguments[i]
+			for (var j in src) {
+				target[j] = src[i];
+			}
+		}
+		
+		return target;
+	}
+	
+});

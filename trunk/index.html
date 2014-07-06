@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test Class</title>
+</head>
+<body>
+<script src="js/class.js"></script>
+<script>
+if (!window.console || !console.log) {
+	console = {
+			log: function(msg) {
+				alert(msg)
+			}
+	};
+}
+	var obj = {
+			a: 'test',
+			f: function() {
+				console.log('test-func')	
+			},
+			initialize: function() {
+				console.log(66)
+				//this.superclass.apply(this, arguments);
+			},
+			t1: function() {
+				console.log('+++++++++++++++++++');
+			}
+	};
+	
+	var obj3 = {
+			a2: 'test2',
+			f2: function() {
+				console.log('test-222222func')	
+			},
+			initialize: function() {
+				console.log(2)
+				//this.superclass.apply(this, arguments);
+			},
+			t12: function() {
+				console.log('+++++++222222222222++++++++++++');
+			}
+	};
+	
+	var func = function() {
+		this.a1 = 'aaaaa';
+		
+	};
+	
+	func.prototype.ab = 'baba';
+	func.prototype.t2 = function() {
+		conosle.log('func.prototype.t2');
+	};
+	
+	func.prototype.t1 = function() {
+		console.log('this.t1');
+	};
+	
+	var SubClass = Class.implement(func, obj, obj3);
+	var obj2 = new SubClass();
+	console.log(obj2);
+	
+	var SubClass = Class(func).implement(obj, obj3);
+	var obj2 = new SubClass();
+	console.log(obj2.t12());
+	
+	var SubClass = Class.extend(func, obj, obj3);
+	var obj2 = new SubClass();
+	console.log(obj2);
+	
+	var SubClass = Class(func).extend(obj, obj3);
+	var obj2 = new SubClass();
+	console.log(obj2);
+</script>
+</body>
+</html>
